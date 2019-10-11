@@ -80,10 +80,6 @@ items = {
 }
 
 
-with open('items.txt','w',encoding='utf-8') as f:
-    json.dump(items,f)
-
-input("x")
 
 class Bot:
     lobby_url = 'https://lobby.ogame.gameforge.com/pl_PL/hub'
