@@ -28,11 +28,11 @@ from buildable_tab import *
 '''
 items = {
     'items': [{'id': '1', 'code': 'metal', 'name': 'Kopalnia metalu', 'tab': 'resources',
-               'base_build_cost':{'metal': 60, 'crystal': 15, 'deuter': 0, 'energy': 0}},
+               'base_build_cost':{'metal': 60, 'crystal': 15, 'deuter': 0, 'energy': 11}},
               {'id': '2', 'code': 'crystal', 'name': 'Kopalnia kryształu', 'tab': 'resources',
-               'base_build_cost':{'metal': 48, 'crystal': 24, 'deuter': 0, 'energy': 0}},
+               'base_build_cost':{'metal': 48, 'crystal': 24, 'deuter': 0, 'energy': 11}},
               {'id': '3', 'code': 'deuter', 'name': 'Ekstraktor deuteru', 'tab': 'resources',
-               'base_build_cost':{'metal': 225, 'crystal': 75, 'deuter': 0, 'energy': 0}}, 
+               'base_build_cost':{'metal': 225, 'crystal': 75, 'deuter': 0, 'energy': 22}}, 
               {'id': '4', 'code': 'solar', 'name': 'Elektrownia słoneczna', 'tab': 'resources',
                'base_build_cost':{'metal': 75, 'crystal': 30, 'deuter': 0, 'energy': 0}}, 
               {'id': '12', 'code': 'fusion', 'name': 'Elektrownia fuzyjna', 'tab': 'resources',
@@ -122,8 +122,6 @@ items = {
                'base_build_cost':{'metal': 10000, 'crystal': 6000, 'deuter': 2000, 'energy': 0}}, 
               {'id': '210', 'code': 'sonda', 'name': 'Sonda szpiegowska', 'tab': 'shipyard',
                'base_build_cost':{'metal': 0, 'crystal': 1000, 'deuter': 0, 'energy': 0}}, 
-              {'id': '212', 'code': 'solar_sat', 'name': 'Satelita słoneczny', 'tab': 'shipyard',
-               'base_build_cost':{'metal': 0, 'crystal': 2000, 'deuter': 500, 'energy': 0}},
               
               {'id': '401', 'code': 'wr', 'name': 'Wyrzutnia rakiet', 'tab': 'defense',
                'base_build_cost':{'metal': 2000, 'crystal': 0, 'deuter': 0, 'energy': 0}}, 
@@ -229,20 +227,26 @@ driver =  webdriver.Chrome(driver_path)
 bot = Bot(login, pwd, driver)
 bot.start()
 
-BotInitializer.initialize_bot(bot,driver)
+BotInitializer.initialize_bot(bot)
 Tab.initialize()
 Buildable.initialize()
-#Buildable.buildings['satelite'].build()
+
 
 
 while True:
-    
-    time.sleep(0.5)
-    
-    t = Tab.getCurrentTab()
+    try:
+        
+        
+        time.sleep(1)
+        
+        t = Tab.getCurrentTab()
 
-    if isinstance(t,Tab):
-        t.update()
-    os.system('cls')
-    print(t)
+        if isinstance(t,Tab):
+            t.update()
+        random.choice([item for item in Buildable.buildables if item.tab.code in ['resources','station','research','shipyard','defense']]).build()
+        os.system('cls')
+        print(t)
+        
+    except:
+        pass
   
