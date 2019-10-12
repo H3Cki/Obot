@@ -4,18 +4,20 @@ from selenium.webdriver.common.by import By
 from resources import Resources
 import json
 import re
+from selenium.webdriver.support import expected_conditions as EC
 
 with open('items.txt', 'r') as f:
     items = json.load(f)
 
 bot = None
+driver = None
 
 class BotInitializer:
     @classmethod
-    def initialize_bot(cls,_bot):
-        global bot
+    def initialize_bot(cls,_bot,_driver):
+        global bot, driver
         bot = _bot
-
+        driver = driver
 
 
 
