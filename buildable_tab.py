@@ -5,19 +5,18 @@ from resources import Resources
 import json
 import re
 from selenium.webdriver.support import expected_conditions as EC
+import time 
 
 with open('items.txt', 'r') as f:
     items = json.load(f)
 
 bot = None
-driver = None
 
 class BotInitializer:
     @classmethod
-    def initialize_bot(cls,_bot,_driver):
-        global bot, driver
+    def initialize_bot(cls,_bot):
+        global bot
         bot = _bot
-        driver = driver
 
 
 
@@ -47,12 +46,12 @@ class Tab:
             self.findToken()
             return
         bot.browser.get(self.url)
-        element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "info")))
-        self.findToken(bot.browser.page_source)
+        element = WebDriverWait(bot.browser, 10).until(EC.presence_of_element_located((By.ID, "info")))
+        self.findToken()
 
 
-    def findToken(self,code):
-        
+    def findToken(self,code=None):
+        code = bot.browser.page_source or code
         if self.code in ('research','shipyard'):
             return None
         bs = BeautifulSoup(code,features="html.parser")
@@ -109,7 +108,7 @@ class Tab:
     '''
         
     def update(self):
-        self.findToken(bot.browser.page_source)
+        self.findToken()
         
         bs = BeautifulSoup(bot.browser.page_source,features="html.parser")
         content = bs.find('div',{'class':self.content_class})
@@ -146,11 +145,11 @@ class Tab:
     
     @classmethod
     def getCurrentTab(cls):
-        
+        tab_url = bot.browser.current_url.split('page=')[-1].split('&')[0]
         for tab in cls.tab_codes:
-            if bot.browser.current_url.endswith(tab):
+            if tab_url.endswith(tab):
                 return cls.tabs[tab]
-        return f"Zakładka '{bot.browser.current_url.split('page=')[-1].split('&')[0]}' nie jest obsługiwana"
+        return f"Zakładka '{tab_url}' nie jest obsługiwana"
 
 
     @classmethod
@@ -175,12 +174,23 @@ class Buildable(BotInitializer):
         self.base_build_cost = Resources(dic=d['base_build_cost'])#to tu jest tylko dla testów
         self.level = -1 #to tu jest tylko dla testów
         
-    def build(self):
-        
-        build_link = self.tab.getRequestLink(self.type)
+    def build(self,n=1):
+
+        build_link = self.tab.getRequestLink(self.id)
         #print(f'BL: {build_link}')
         #bot.browser.get(build_link)
-        bot.browser.execute_script(f"sendBuildRequest('{build_link}', null, 1);")
+        if self.tab.code in ['resources','station','research']:
+            bot.browser.execute_script(f"sendBuildRequest('{build_link}', null, 1);")
+        else:
+            el = bot.browser.find_element_by_id('details'+self.id)
+            el.click()
+            #bot.browser.find_element_by_id('number').SetAttribute("value", 2);
+            try:
+                WebDriverWait(bot.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "build-it")))
+            except:
+                return
+            bot.browser.execute_script(f"checkIntInput(null, {n}, 99999);")
+            bot.browser.execute_script(f"sendBuildRequest(null, event, false);")
         
         
     def getBuildCost(self,level=None):
