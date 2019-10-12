@@ -73,4 +73,4 @@ class Resources:
     
         
     def __str__(self):
-        return f'Metal: {self.metal}  Kryształ: {self.crystal}  Deuter: {self.deuter}  Energia: {self.energy}'
+        return f'Metal: {self.metal_f}  Kryształ: {self.crystal_f}  Deuter: {self.deuter_f}  Energia: {self.energy_f}'
