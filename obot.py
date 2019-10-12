@@ -229,7 +229,7 @@ driver =  webdriver.Chrome(driver_path)
 bot = Bot(login, pwd, driver)
 bot.start()
 
-BotInitializer.initialize_bot(bot)
+BotInitializer.initialize_bot(bot,driver)
 Tab.initialize()
 Buildable.initialize()
 #Buildable.buildings['satelite'].build()
