@@ -238,12 +238,11 @@ Buildable.initialize()
 while True:
     
     time.sleep(0.5)
-    os.system('cls')
+    
     t = Tab.getCurrentTab()
-    token = None
-    if t:
+
+    if isinstance(t,Tab):
         t.update()
-        print(t)
-    else:
-        print('Unknown tab')
- 
+    os.system('cls')
+    print(t)
+  
