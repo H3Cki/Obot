@@ -148,7 +148,7 @@ class Tab:
         for tab in cls.tab_codes:
             if bot.browser.current_url.endswith(tab):
                 return cls.tabs[tab]
-        return None
+        return f"Zakładka '{bot.browser.current_url.split('page=')[-1].split('&')[0]}' nie jest obsługiwana"
 
 
     @classmethod
