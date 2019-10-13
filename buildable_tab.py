@@ -39,7 +39,6 @@ class Tab:
             
         self.items = []
         self.token = None
-        self.initial_update = False
         
     def open(self):
         if Tab.getCurrentTab() == self:
@@ -107,14 +106,17 @@ class Tab:
         print(d)
     '''
         
-    def update(self):
+    def update(self,open=False):
         if Tab.getCurrentTab() != self:
-            return
+            if open:
+                self.open()
+            else: return
         self.findToken()
         
         bs = BeautifulSoup(bot.browser.page_source,features="html.parser")
         content = bs.find('div',{'class':self.content_class})
         
+      
         for li in content.findAll('li'):
             id = 0
             for a in li.findAll('a'):
@@ -123,6 +125,8 @@ class Tab:
                     break
                 
             item = Buildable.getItem(id,by='id')
+            
+            if not item: return
             
             text_label = li.find('span',{'class':'level'})
 
@@ -165,10 +169,11 @@ class Tab:
         
     @classmethod
     def updateAll(cls):
+        print("Updating all tabs...")
         for t in Tab.tabs.items():
-            t[1].update()
-            t[1].initial_update = True
-
+            print(t[1].code)
+            t[1].update(open=True)
+        print("DONE")
 class Buildable(BotInitializer):
     buildables = []
 
@@ -178,8 +183,9 @@ class Buildable(BotInitializer):
         self.name = d['name']
         self.tab = Tab.tabs[d['tab']]
         self.tab.items.append(self)
-        self.base_build_cost = Resources(dic=d['base_build_cost'])#to tu jest tylko dla testów
-        self.level = -1 #to tu jest tylko dla testów
+        self.base_build_cost = Resources(dic=d['base_build_cost'])
+        self.tab.update() #to tu jest tylko dla testów
+        self.level = -1
 
         
     def canBuild(self):
@@ -257,6 +263,6 @@ class Buildable(BotInitializer):
     def getBuildableItems(cls):
         x = []
         for item in cls.buildables:
-            if item.canBuild() and item.tab.initial_update:
+            if item.canBuild() and item.level != -1:
                 x.append(item)
         return x
