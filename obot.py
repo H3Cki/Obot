@@ -158,7 +158,7 @@ class Bot:
         self.name = '???'
 
         self.resources = Resources()
-    
+        self.text_output = []
     def login(self):
         
         self.browser.get(Bot.lobby_url)
@@ -240,18 +240,27 @@ class Bot:
         self.resources = Resources(metal,crystal,deuter,energy)
 
 
+    def add_output(self,v):
+        self.text_output.append(str(v))
+    
+    
+    def clear_output(self):
+        self.text_output = []
+    
+    
+    def print_output(self):
+        print("\n".join(self.text_output))
+    
+
     def tick(self):
         self.updateResources()
-        print(self)
+        self.add_output(self)
         ct = Tab.getCurrentTab()
         if isinstance(ct,Tab):
             ct.update()
-        print(ct)
         
+        self.add_output(ct)
         bi = Buildable.getBuildableItems()
-        print("[ENOUGH RESOURCES FOR]")
-        print(", ".join([b.name for b in bi]))
-        #if len(bi): #random.choice(bi).build() 
         
     
     def __str__(self):
@@ -263,12 +272,15 @@ driver =  webdriver.Chrome(driver_path)
 bot = Bot(login, pwd, driver)
 bot.start()
 
+update_interval = 0.1
+
 
 while True:
     
-    time.sleep(1)
-    os.system('cls')
+    
     bot.tick()
-        
- 
-  
+    os.system('cls')
+    bot.print_output()
+    bot.clear_output()
+
+    time.sleep(update_interval)
