@@ -156,7 +156,8 @@ class Bot:
         self.AccPassword = pwd
         self.browser = driver 
         self.name = '???'
-    
+
+        self.resources = Resources()
     
     def login(self):
         
@@ -219,8 +220,33 @@ class Bot:
             element = postconv(element)
         return element
 
+    def updateResources(self):
+        
+        bs = BeautifulSoup(bot.browser.page_source,features="html.parser")
+        metal = bs.find('span',{'id':'resources_metal'}).getText()
+        crystal = bs.find('span',{'id':'resources_crystal'}).getText()
+        deuter = bs.find('span',{'id':'resources_deuterium'}).getText()
+        energy = bs.find('span',{'id':'resources_energy'}).getText()
+        
+        self.resources = Resources(metal,crystal,deuter,energy)
 
 
+    def tick(self):
+        self.updateResources()
+        print(self)
+        ct = Tab.getCurrentTab()
+        if isinstance(ct,Tab):
+            ct.update()
+        print(ct)
+        
+        bi = Buildable.getBuildableItems()
+        print("[ENOUGH RESOURCES FOR]")
+        for b in bi:
+            print(b.name+" | "+str(bot.resources.pay(b.getBuildCost())))
+        if len(bi): random.choice(bi).build() 
+        
+    def __str__(self):
+        return f'[BOT]\n[RESOURCES] {self.resources}'
    
 driver_path = "C:\\Users\\HECki\\Documents\\Python_Scripts\\chromedriver.exe"
 driver =  webdriver.Chrome(driver_path)
@@ -230,23 +256,15 @@ bot.start()
 BotInitializer.initialize_bot(bot)
 Tab.initialize()
 Buildable.initialize()
-
+Tab.updateAll()
 
 
 while True:
-    try:
-        
-        
-        time.sleep(1)
-        
-        t = Tab.getCurrentTab()
 
-        if isinstance(t,Tab):
-            t.update()
-        random.choice([item for item in Buildable.buildables if item.tab.code in ['resources','station','research','shipyard','defense']]).build()
-        os.system('cls')
-        print(t)
         
-    except:
-        pass
+    time.sleep(1)
+    os.system('cls')
+    bot.tick()
+        
+ 
   
