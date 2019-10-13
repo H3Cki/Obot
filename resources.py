@@ -4,15 +4,15 @@ import math
 class Resources:
     def __init__(self,metal=0,crystal=0,deuter=0,energy=0,dic=None):
         if dic:
-            self.metal = dic['metal']
-            self.crystal = dic['crystal']
-            self.deuter = dic['deuter']
-            self.energy = dic['energy']
+            self.metal = int(Utils.removePunctuation(dic.get('metal',0)))
+            self.crystal = int(Utils.removePunctuation(dic.get('crystal',0)))
+            self.deuter = int(Utils.removePunctuation(dic.get('deuter',0)))
+            self.energy = int(Utils.removePunctuation(dic.get('energy',0)))
         else:
-            self.metal = metal
-            self.crystal = crystal
-            self.deuter = deuter
-            self.energy = energy
+            self.metal = int(Utils.removePunctuation(metal))
+            self.crystal = int(Utils.removePunctuation(crystal))
+            self.deuter = int(Utils.removePunctuation(deuter))
+            self.energy = int(Utils.removePunctuation(energy))
         self.formatAttributes()
         
         
@@ -26,16 +26,27 @@ class Resources:
     
     def isNegative(self):
         negatives = self.__dict__()
+
         to_pop = []
         for v in negatives.items():
             if v[1] >= 0:
                 to_pop.append(v[0])
         for key in to_pop:
         	negatives.pop(key,None)
-
         if len(negatives) == 0:
             return False
-        return negatives
+        return True
+        
+        
+    def isPositive(self):
+        return not self.isNegative()
+        
+        
+    def pay(self,other,skip_energy=True):
+        self -= other
+        if skip_energy and self.energy < 0:
+            self.energy = 0
+        return Resources(dic=self.__dict__())
         
         
     def __add__(self,other):   
@@ -74,3 +85,5 @@ class Resources:
         
     def __str__(self):
         return f'Metal: {self.metal_f}  Kryształ: {self.crystal_f}  Deuter: {self.deuter_f}  Energia: {self.energy_f}'
+    
+    
