@@ -197,7 +197,16 @@ class Bot:
         self.browser.switch_to.window(self.browser.window_handles[1])
         self.find(By.ID, "resources")
         self.name = self.find(By.XPATH,'/html/body/div[2]/div[2]/div/div[1]/div[5]/ul/li[1]/span/a',attr='text')
-        print('DONE!')
+        print('Logged in.')
+        self.initialize()
+
+    def initialize(self):
+        
+        BotInitializer.initialize_bot(self)
+        Tab.initialize()
+        Buildable.initialize()
+        Tab.updateAll()
+        print("READY!")
 
 
     def find(self,by,value,attr=None,conv=None,preconv=None,postconv=None,timer=10,no_wait=False):
@@ -241,27 +250,22 @@ class Bot:
         
         bi = Buildable.getBuildableItems()
         print("[ENOUGH RESOURCES FOR]")
-        for b in bi:
-            print(b.name+" | "+str(bot.resources.pay(b.getBuildCost())))
-        if len(bi): random.choice(bi).build() 
+        print(", ".join([b.name for b in bi]))
+        #if len(bi): #random.choice(bi).build() 
         
+    
     def __str__(self):
         return f'[BOT]\n[RESOURCES] {self.resources}'
+   
    
 driver_path = "C:\\Users\\HECki\\Documents\\Python_Scripts\\chromedriver.exe"
 driver =  webdriver.Chrome(driver_path)
 bot = Bot(login, pwd, driver)
 bot.start()
 
-BotInitializer.initialize_bot(bot)
-Tab.initialize()
-Buildable.initialize()
-Tab.updateAll()
-
 
 while True:
-
-        
+    
     time.sleep(1)
     os.system('cls')
     bot.tick()
