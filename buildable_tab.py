@@ -18,8 +18,6 @@ class BotInitializer:
         global bot
         bot = _bot
 
-
-
 class Tab:
     
     tab_codes = ['resources','station','research','shipyard','defense']
@@ -161,9 +159,9 @@ class Tab:
     @classmethod
     def initialize(cls):
         print('Initializing tabs')
-        for tc in cls.tab_codes:
+        for tc in Tab.tab_codes:
             print(f'Creating {tc}')
-            cls.tabs[tc] = cls(tc)
+            Tab.tabs[tc] = cls(tc)
         print("DONE")
         
         
@@ -174,6 +172,8 @@ class Tab:
             print(t[1].code)
             t[1].update(open=True)
         print("DONE")
+
+        
 class Buildable(BotInitializer):
     buildables = []
 
