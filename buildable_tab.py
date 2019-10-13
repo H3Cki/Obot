@@ -39,7 +39,7 @@ class Tab:
             
         self.items = []
         self.token = None
-        
+        self.initial_update = False
         
     def open(self):
         if Tab.getCurrentTab() == self:
@@ -108,6 +108,8 @@ class Tab:
     '''
         
     def update(self):
+        if Tab.getCurrentTab() != self:
+            return
         self.findToken()
         
         bs = BeautifulSoup(bot.browser.page_source,features="html.parser")
@@ -161,6 +163,11 @@ class Tab:
         print("DONE")
         
         
+    @classmethod
+    def updateAll(cls):
+        for t in Tab.tabs.items():
+            t[1].update()
+            t[1].initial_update = True
 
 class Buildable(BotInitializer):
     buildables = []
@@ -173,11 +180,23 @@ class Buildable(BotInitializer):
         self.tab.items.append(self)
         self.base_build_cost = Resources(dic=d['base_build_cost'])#to tu jest tylko dla testów
         self.level = -1 #to tu jest tylko dla testów
-        
-    def build(self,n=1):
 
+        
+    def canBuild(self):
+        balance = bot.resources.pay(self.getBuildCost(),skip_energy = self.getBuildCost().energy <= 0)  
+        return balance.isPositive()
+    
+    
+    def build(self,n=1):
+        
+        
         build_link = self.tab.getRequestLink(self.id)
-        #print(f'BL: {build_link}')
+        if self.tab.code in ['resources','station','research']:
+            self.tab.update()
+        
+        if not self.canBuild():
+            return False
+        
         #bot.browser.get(build_link)
         if self.tab.code in ['resources','station','research']:
             bot.browser.execute_script(f"sendBuildRequest('{build_link}', null, 1);")
@@ -186,12 +205,12 @@ class Buildable(BotInitializer):
             el.click()
             #bot.browser.find_element_by_id('number').SetAttribute("value", 2);
             try:
-                WebDriverWait(bot.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "build-it")))
+                WebDriverWait(bot.browser, 4).until(EC.presence_of_element_located((By.CLASS_NAME, "build-it")))
             except:
-                return
+                return False
             bot.browser.execute_script(f"checkIntInput(null, {n}, 99999);")
             bot.browser.execute_script(f"sendBuildRequest(null, event, false);")
-        
+        return True
         
     def getBuildCost(self,level=None):
         
@@ -205,7 +224,6 @@ class Buildable(BotInitializer):
         
         return base_cost * (multiplier ** (level-1))
             
-    
     
     def __str__(self):
         #return f'({self.id}#{self.code}) {self.name}: {self.level} Lvl'   
@@ -234,3 +252,11 @@ class Buildable(BotInitializer):
                 return item
         
         return None
+    
+    @classmethod
+    def getBuildableItems(cls):
+        x = []
+        for item in cls.buildables:
+            if item.canBuild() and item.tab.initial_update:
+                x.append(item)
+        return x
