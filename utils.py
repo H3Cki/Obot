@@ -11,3 +11,10 @@ class Utils:
                 rv[i] = char+separator
         v = ''.join(list(reversed(rv)))
         return v
+    
+    @staticmethod
+    def removePunctuation(value):
+        if not isinstance(value,str):
+            return value
+        value = value.replace('.','').replace(' ','').replace(',','')
+        return value
