@@ -189,24 +189,24 @@ class Buildable(BotInitializer):
 
         
     def canBuild(self):
-        balance = bot.resources.pay(self.getBuildCost(),skip_energy = self.getBuildCost().energy <= 0)  
+        balance = bot.resources.pay(self.getBuildCost(),skip_energy = self.getBuildCost().energy <= 0)
         return balance.isPositive()
     
     
     def build(self,n=1):
-        
-        
-        build_link = self.tab.getRequestLink(self.id)
-        if self.tab.code in ['resources','station','research']:
-            self.tab.update()
-        
+ 
+        self.tab.update(open=True)
+
         if not self.canBuild():
             return False
-        
+
         #bot.browser.get(build_link)
         if self.tab.code in ['resources','station','research']:
+            build_link = self.tab.getRequestLink(self.id)
             bot.browser.execute_script(f"sendBuildRequest('{build_link}', null, 1);")
         else:
+            #STARY KOD
+            '''
             el = bot.browser.find_element_by_id('details'+self.id)
             el.click()
             #bot.browser.find_element_by_id('number').SetAttribute("value", 2);
@@ -216,18 +216,41 @@ class Buildable(BotInitializer):
                 return False
             bot.browser.execute_script(f"checkIntInput(null, {n}, 99999);")
             bot.browser.execute_script(f"sendBuildRequest(null, event, false);")
+            '''
+            
+            
+            
+            
+            replacementHTML = []
+            replacementHTML.append(f'<input type="hidden" name="modus" value="1"></input>')
+            replacementHTML.append(f'<input type="hidden" name="type" value={self.id}></input>')
+            replacementHTML.append(f'<input id="number" type="text" class="amount_input" pattern="[0-9,.]*" size="5" name="menge" value={n} onfocus="clearInput(this);" onkeyup="checkIntInput(this, 1, 99999);event.stopPropagation();"></input>')
+            #replacementHTML.append('<script type="text/javascript">$(document).ready(function() {$("#number").focus();});</script>')
+            
+            for line in replacementHTML:
+                bot.browser.execute_script(f"document.getElementById('detail').insertAdjacentHTML('beforeend', '{line}');")
+     
+            bot.browser.execute_script(f"checkIntInput(null, 1, 99999);")
+        
+            bot.browser.execute_script(f"sendBuildRequest(null, event, false);")
+                
         return True
         
     def getBuildCost(self,level=None):
         
-        if level is None:
-            level = self.level+1
-        else:
-            level = level
-
         base_cost = self.base_build_cost
         multiplier = self.getCostMultiplier()
         
+        if self.tab.code in ['shipyard','defense']:
+            if level is None:
+                level = 1
+            return base_cost * level
+        
+        elif level is None:
+            level = self.level+1
+        else:
+            level = level
+            
         return base_cost * (multiplier ** (level-1))
             
     
@@ -266,3 +289,8 @@ class Buildable(BotInitializer):
             if item.canBuild() and item.level != -1:
                 x.append(item)
         return x
+    
+    
+    
+    
+    
