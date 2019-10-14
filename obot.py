@@ -280,7 +280,6 @@ Buildable.getItem('mt',by='code').build(2)
 
 #Tab.tabs['shipyard'].open()
 #bot.browser.execute_script("document.getElementsByClassName('detail_screen')[0].innerHTML='{replacementHTML}'")
-input("XD")
 
 while True:
     
