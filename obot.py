@@ -205,8 +205,8 @@ class Bot:
         BotInitializer.initialize_bot(self)
         Tab.initialize()
         Buildable.initialize()
-        Tab.updateAll()
-        print("READY!")
+        #Tab.updateAll()
+
 
 
     def find(self,by,value,attr=None,conv=None,preconv=None,postconv=None,timer=10,no_wait=False):
@@ -267,13 +267,20 @@ class Bot:
         return f'[BOT]\n[RESOURCES] {self.resources}'
    
    
-driver_path = "C:\\Users\\HECki\\Documents\\Python_Scripts\\chromedriver.exe"
+driver_path = "C:\\webdrivers\\chromedriver.exe"
 driver =  webdriver.Chrome(driver_path)
 bot = Bot(login, pwd, driver)
 bot.start()
 
 update_interval = 0.1
 
+
+bot.tick()
+Buildable.getItem('mt',by='code').build(2)
+
+#Tab.tabs['shipyard'].open()
+#bot.browser.execute_script("document.getElementsByClassName('detail_screen')[0].innerHTML='{replacementHTML}'")
+input("XD")
 
 while True:
     
