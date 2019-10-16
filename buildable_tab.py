@@ -6,17 +6,10 @@ import json
 import re
 from selenium.webdriver.support import expected_conditions as EC
 import time 
+from bot_instance import BI
 
 with open('items.txt', 'r') as f:
     items = json.load(f)
-
-bot = None
-
-class BotInitializer:
-    @classmethod
-    def initialize_bot(cls,_bot):
-        global bot
-        bot = _bot
 
 class Tab:
     
@@ -42,13 +35,13 @@ class Tab:
         if Tab.getCurrentTab() == self:
             self.findToken()
             return
-        bot.browser.get(self.url)
-        element = WebDriverWait(bot.browser, 10).until(EC.presence_of_element_located((By.ID, "info")))
+        BI.bot.browser.get(self.url)
+        element = WebDriverWait(BI.bot.browser, 10).until(EC.presence_of_element_located((By.ID, "info")))
         self.findToken()
 
 
     def findToken(self,code=None):
-        code = bot.browser.page_source or code
+        code = BI.bot.browser.page_source or code
         if self.code in ('research','shipyard'):
             return None
         bs = BeautifulSoup(code,features="html.parser")
@@ -79,7 +72,7 @@ class Tab:
     
     def getInfo(self):
         
-        bs = BeautifulSoup(bot.browser.page_source,features="html.parser")
+        bs = BeautifulSoup(BI.bot.browser.page_source,features="html.parser")
         content = bs.find('div',{'class':self.content_class})
         d = {'items':[]}
         
@@ -111,7 +104,7 @@ class Tab:
             else: return
         self.findToken()
         
-        bs = BeautifulSoup(bot.browser.page_source,features="html.parser")
+        bs = BeautifulSoup(BI.bot.browser.page_source,features="html.parser")
         content = bs.find('div',{'class':self.content_class})
         
       
@@ -149,7 +142,7 @@ class Tab:
     
     @classmethod
     def getCurrentTab(cls):
-        tab_url = bot.browser.current_url.split('page=')[-1].split('&')[0]
+        tab_url = BI.bot.browser.current_url.split('page=')[-1].split('&')[0]
         for tab in cls.tab_codes:
             if tab_url.endswith(tab):
                 return cls.tabs[tab]
@@ -174,7 +167,7 @@ class Tab:
         print("DONE")
 
         
-class Buildable(BotInitializer):
+class Buildable:
     buildables = []
 
     def __init__(self,d):
@@ -189,7 +182,7 @@ class Buildable(BotInitializer):
 
         
     def canBuild(self):
-        balance = bot.resources.pay(self.getBuildCost(),skip_energy = self.getBuildCost().energy <= 0)
+        balance = BI.bot.resources.pay(self.getBuildCost(),skip_energy = self.getBuildCost().energy <= 0)
         return balance.isPositive()
     
     
@@ -200,22 +193,22 @@ class Buildable(BotInitializer):
         if not self.canBuild():
             return False
 
-        #bot.browser.get(build_link)
+        #BI.bot.browser.get(build_link)
         if self.tab.code in ['resources','station','research']:
             build_link = self.tab.getRequestLink(self.id)
-            bot.browser.execute_script(f"sendBuildRequest('{build_link}', null, 1);")
+            BI.bot.browser.execute_script(f"sendBuildRequest('{build_link}', null, 1);")
         else:
             #STARY KOD
             '''
-            el = bot.browser.find_element_by_id('details'+self.id)
+            el = BI.bot.browser.find_element_by_id('details'+self.id)
             el.click()
-            #bot.browser.find_element_by_id('number').SetAttribute("value", 2);
+            #BI.bot.browser.find_element_by_id('number').SetAttribute("value", 2);
             try:
-                WebDriverWait(bot.browser, 4).until(EC.presence_of_element_located((By.CLASS_NAME, "build-it")))
+                WebDriverWait(BI.bot.browser, 4).until(EC.presence_of_element_located((By.CLASS_NAME, "build-it")))
             except:
                 return False
-            bot.browser.execute_script(f"checkIntInput(null, {n}, 99999);")
-            bot.browser.execute_script(f"sendBuildRequest(null, event, false);")
+            BI.bot.browser.execute_script(f"checkIntInput(null, {n}, 99999);")
+            BI.bot.browser.execute_script(f"sendBuildRequest(null, event, false);")
             '''
             
             
@@ -225,14 +218,13 @@ class Buildable(BotInitializer):
             replacementHTML.append(f'<input type="hidden" name="modus" value="1"></input>')
             replacementHTML.append(f'<input type="hidden" name="type" value={self.id}></input>')
             replacementHTML.append(f'<input id="number" type="text" class="amount_input" pattern="[0-9,.]*" size="5" name="menge" value={n} onfocus="clearInput(this);" onkeyup="checkIntInput(this, 1, 99999);event.stopPropagation();"></input>')
-            #replacementHTML.append('<script type="text/javascript">$(document).ready(function() {$("#number").focus();});</script>')
             
             for line in replacementHTML:
-                bot.browser.execute_script(f"document.getElementById('detail').insertAdjacentHTML('beforeend', '{line}');")
+                BI.bot.browser.execute_script(f"document.getElementById('detail').insertAdjacentHTML('beforeend', '{line}');")
      
-            bot.browser.execute_script(f"checkIntInput(null, 1, 99999);")
+            BI.bot.browser.execute_script(f"checkIntInput(null, 1, 99999);")
         
-            bot.browser.execute_script(f"sendBuildRequest(null, event, false);")
+            BI.bot.browser.execute_script(f"sendBuildRequest(null, event, false);")
                 
         return True
         
@@ -256,7 +248,7 @@ class Buildable(BotInitializer):
     
     def __str__(self):
         #return f'({self.id}#{self.code}) {self.name}: {self.level} Lvl'   
-        return f'{self.name}: {self.level} Lvl [UPGRADE] {self.getBuildCost()}'  
+        return f'{self.name}: {self.level} Lvl'# [UPGRADE] {self.getBuildCost()}'  
         
     
     def getCostMultiplier(self):
