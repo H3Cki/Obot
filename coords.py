@@ -20,3 +20,24 @@ class Coords:
         
     def __str__(self):
         return f'{self.galaxy}:{self.system}:{self.position}'
+
+
+
+import json
+with open('items.txt', 'r') as f:
+    items = json.load(f)
+    
+    
+
+for i,item in enumerate(items['items']):
+    if item['tab'] == 'shipyard' or item['tab'] == 'defense' or item['code'] == 'solar_sat':
+        item['build_cost_increase'] = False
+    else:
+        item['build_cost_increase'] = True
+
+
+with open('items.txt', 'w') as f:
+    json.dump(items,f)
+
+#for i,item in enumerate(items['items']):
+    #print(item)
