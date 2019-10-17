@@ -73,6 +73,9 @@ class BuildableTab(Tab):
         bs = BeautifulSoup(BI.bot.browser.page_source,features="html.parser")
         content = bs.find('div',{'class':self.content_class})
         
+        if not content: 
+            print("CONTENT UNAVAILABLE")
+            return
       
         for li in content.findAll('li'):
             id = 0
