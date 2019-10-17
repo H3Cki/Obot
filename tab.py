@@ -24,17 +24,16 @@ class Tab:
         
     def findToken(self,code=None):
         code = BI.bot.browser.page_source or code
-        if self.code in ('research','shipyard'):
-            return None
+        
         bs = BeautifulSoup(code,features="html.parser")
         a = bs.find('a',{'class':'fastBuild tooltip js_hideTipOnMobile'})
-        if a is None:
+        if not a: return None
+        tokens = a.get('onclick').split('token=')
+        try:
+            token = tokens[1][:32]
+        except:
             return None
-        else:
-            tokens = a.get('onclick').split('token=')
-            try:
-                token = tokens[1][:32]
-            except:
-                return None
         self.token = token
         return token
+        
+            
