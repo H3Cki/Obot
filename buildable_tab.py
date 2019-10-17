@@ -177,6 +177,7 @@ class Buildable:
         self.tab = Tab.tabs[d['tab']]
         self.tab.items.append(self)
         self.base_build_cost = Resources(dic=d['base_build_cost'])
+        self.build_cost_increase = d['build_cost_increase']
         self.tab.update() #to tu jest tylko dla testów
         self.level = -1
 
@@ -233,10 +234,10 @@ class Buildable:
         base_cost = self.base_build_cost
         multiplier = self.getCostMultiplier()
         
-        if self.tab.code in ['shipyard','defense']:
-            if level is None:
-                level = 1
+        if self.build_cost_increase is False:
+            if level is None: level = 1
             return base_cost * level
+        
         
         elif level is None:
             level = self.level+1
