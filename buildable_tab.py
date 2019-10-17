@@ -1,62 +1,28 @@
 from bs4 import BeautifulSoup
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
 from resources import Resources
 import json
 import re
-from selenium.webdriver.support import expected_conditions as EC
 import time 
 from bot_instance import BI
+from tab import Tab
 
 with open('items.txt', 'r') as f:
     items = json.load(f)
 
-class Tab:
+class BuildableTab(Tab):
     
     tab_codes = ['resources','station','research','shipyard','defense']
     tabs = {}
-    base_url = 'https://s163-pl.ogame.gameforge.com/game/index.php?page='
-    
-    
-    def __init__(self,code):
         
-        self.code = code
-        self.url = Tab.base_url + code
-        
-        if code == 'research':
+    
+    def initExtra(self):
+        if self.code == 'research':
             self.content_class = 'wrapButtons'
         else:
             self.content_class = 'content'
             
         self.items = []
-        self.token = None
         
-    def open(self):
-        if Tab.getCurrentTab() == self:
-            self.findToken()
-            return
-        BI.bot.browser.get(self.url)
-        element = WebDriverWait(BI.bot.browser, 10).until(EC.presence_of_element_located((By.ID, "info")))
-        self.findToken()
-
-
-    def findToken(self,code=None):
-        code = BI.bot.browser.page_source or code
-        if self.code in ('research','shipyard'):
-            return None
-        bs = BeautifulSoup(code,features="html.parser")
-        a = bs.find('a',{'class':'fastBuild tooltip js_hideTipOnMobile'})
-        if a is None:
-            return None
-        else:
-            tokens = a.get('onclick').split('token=')
-            try:
-                token = tokens[1][:32]
-            except:
-                return None
-        self.token = token
-        return token
-
 
     def getRequestLink(self,type):
         
@@ -98,7 +64,7 @@ class Tab:
     '''
         
     def update(self,open=False):
-        if Tab.getCurrentTab() != self:
+        if BI.bot.getCurrentTab() != self:
             if open:
                 self.open()
             else: return
@@ -138,30 +104,22 @@ class Tab:
             if item.tab == self:
                 t += str(item) + "\n"
         return t
-    
-    
-    @classmethod
-    def getCurrentTab(cls):
-        tab_url = BI.bot.browser.current_url.split('page=')[-1].split('&')[0]
-        for tab in cls.tab_codes:
-            if tab_url.endswith(tab):
-                return cls.tabs[tab]
-        return f"Zakładka '{tab_url}' nie jest obsługiwana"
 
 
     @classmethod
     def initialize(cls):
         print('Initializing tabs')
-        for tc in Tab.tab_codes:
-            print(f'Creating {tc}')
-            Tab.tabs[tc] = cls(tc)
+        for tc in BuildableTab.tab_codes:
+            instance = BuildableTab(tc)
+            instance.initExtra()
+            BuildableTab.tabs[tc] = instance
         print("DONE")
         
         
     @classmethod
     def updateAll(cls):
         print("Updating all tabs...")
-        for t in Tab.tabs.items():
+        for t in BuildableTab.tabs.items():
             print(t[1].code)
             t[1].update(open=True)
         print("DONE")
@@ -174,7 +132,7 @@ class Buildable:
         self.id = d['id']
         self.code = d['code']
         self.name = d['name']
-        self.tab = Tab.tabs[d['tab']]
+        self.tab = BuildableTab.tabs[d['tab']]
         self.tab.items.append(self)
         self.base_build_cost = Resources(dic=d['base_build_cost'])
         self.build_cost_increase = d['build_cost_increase']
