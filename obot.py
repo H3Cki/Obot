@@ -22,9 +22,9 @@ bot = None
 
 from resources import Resources
 from utils import *
-from buildable_tab import Tab, Buildable
+from buildable_tab import BuildableTab, Buildable
 from bot_instance import BI
-
+from tab import Tab
     
 class Bot:
     lobby_url = 'https://lobby.ogame.gameforge.com/pl_PL/hub'
@@ -82,9 +82,9 @@ class Bot:
 
     def initialize(self):
 
-        Tab.initialize()
+        BuildableTab.initialize()
         Buildable.initialize()
-        #Tab.updateAll()
+        #BuildableTab.updateAll()
 
 
     def find(self,by,value,attr=None,conv=None,preconv=None,postconv=None,timer=10,no_wait=False):
@@ -133,13 +133,20 @@ class Bot:
     def tick(self):
         self.updateResources()
         self.add_output(self)
-        ct = Tab.getCurrentTab()
-        if isinstance(ct,Tab):
+        ct = self.getCurrentTab()
+        if isinstance(ct,BuildableTab):
             ct.update()
         
         self.add_output(ct)
         bi = Buildable.getBuildableItems()
-        
+    
+    
+    def getCurrentTab(self):
+        tab_url = self.browser.current_url.split('page=')[-1].split('&')[0]
+        for code,tab in Tab.all_tabs.items():
+            if tab_url == tab.code:
+                return tab
+        return f"Zakładka '{tab_url}' nie jest obsługiwana"    
     
     def __str__(self):
         return f'[BOT]\n[RESOURCES] {self.resources}'
@@ -156,7 +163,7 @@ update_interval = 0.1
 bot.tick()
 Buildable.getItem('mt',by='code').build(2)
 
-#Tab.tabs['shipyard'].open()
+#BuildableTab.tabs['shipyard'].open()
 #bot.browser.execute_script("document.getElementsByClassName('detail_screen')[0].innerHTML='{replacementHTML}'")
 
 while True:
